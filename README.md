@@ -1,3 +1,43 @@
+gen-ui\components\prebuilt\  组件预设页面
+ai\tools\workout.tsx         组件预设页面相关工具
+ai\tools\index.ts            路由
+ai\graph.tsx                 添加相关链接
+
+兼容性
+
+test
+"记录一次晨跑：标题是'清晨5公里'，距离5公里，时间35分钟，配速7分钟每公里，消耗了320卡路里"
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # Generative UI with LangChain.js 🦜🔗
 
 ![Generative UI with LangChain.js](./public/gen_ui_diagram.png)
