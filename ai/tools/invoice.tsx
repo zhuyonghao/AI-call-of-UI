@@ -1,0 +1,85 @@
+import { z } from "zod";
+import { v4 as uuidv4 } from "uuid";
+import { InvoiceLoading, Invoice } from "@/components/prebuilt/invoice";
+import { CUSTOM_UI_YIELD_NAME } from "@/utils/server";
+import { tool } from "@langchain/core/tools";
+import { dispatchCustomEvent } from "@langchain/core/callbacks/dispatch/web";
+
+const LineItemSchema = z.object({
+  id: z
+    .string()
+    .default(uuidv4())
+    .describe("Unique identifier for the line item"),
+  name: z.string().describe("Name or description of the line item"),
+  quantity: z.number().int().positive().describe("Quantity of the line item"),
+  price: z.number().positive().describe("Price per unit of the line item"),
+});
+
+const ShippingAddressSchema = z.object({
+  name: z.string().describe("Name of the recipient"),
+  street: z.string().describe("Street address for shipping"),
+  city: z.string().describe("City for shipping"),
+  state: z.string().describe("State or province for shipping"),
+  zip: z.string().describe("ZIP or postal code for shipping"),
+});
+
+const CustomerInfoSchema = z.object({
+  name: z.string().describe("Name of the customer"),
+  email: z.string().email().describe("Email address of the customer"),
+  phone: z.string().optional().describe("Phone number of the customer"),
+});
+
+const PaymentInfoSchema = z.object({
+  cardType: z.string().describe("Type of credit card used for payment"),
+  cardNumberLastFour: z
+    .string()
+    .describe("Last four digits of the credit card number"),
+});
+
+export const InvoiceSchema = z.object({
+  orderId: z.string().describe("The order ID"),
+  lineItems: z
+    .array(LineItemSchema)
+    .describe("List of line items in the invoice"),
+  shippingAddress: ShippingAddressSchema.optional().describe(
+    "Shipping address for the order",
+  ),
+  customerInfo: CustomerInfoSchema.optional().describe(
+    "Information about the customer",
+  ),
+  paymentInfo: PaymentInfoSchema.optional().describe(
+    "Payment information for the order",
+  ),
+});
+
+export const invoiceTool = tool(
+  async (input, config) => {
+    await dispatchCustomEvent(
+      CUSTOM_UI_YIELD_NAME,
+      {
+        output: {
+          value: <InvoiceLoading />,
+          type: "append",
+        },
+      },
+      config,
+    );
+    await dispatchCustomEvent(
+      CUSTOM_UI_YIELD_NAME,
+      {
+        output: {
+          value: <Invoice {...input} />,
+          type: "update",
+        },
+      },
+      config,
+    );
+    return JSON.stringify(input, null);
+  },
+  {
+    name: "get_order_invoice",
+    description:
+      "A tool to fetch the invoice from an order. This should only be called if a user uploads an image/receipt of an order.",
+    schema: InvoiceSchema,
+  },
+);
