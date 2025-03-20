@@ -2,20 +2,17 @@ import Chat from "@/components/prebuilt/chat";
 
 export default function Home() {
   return (
-    <main className="flex h-screen flex-col items-center justify-between px-24">
-      <div className="w-full min-w-[600px] flex flex-col gap-4">
-        <p className="text-[28px] text-center font-medium">
-          Generative UI with{" "}
-          <a
-            href="https://github.com/langchain-ai/langchainjs"
-            target="_blank"
-            className="text-blue-600 hover:underline hover:underline-offset-2"
-          >
-            LangChain.js 🦜🔗
-          </a>
-        </p>
+    <main className="flex h-screen flex-col items-center justify-center">
+      <h1 className="main-title">AI健身助手</h1>
+      <p className="subtitle">您的个性化健身教练，随时随地为您提供专业指导</p>
+      
+      <div className="chat-container">
         <Chat />
       </div>
+      
+      <button className="login-btn">
+        <i className="fas fa-user me-2"></i>登录/注册
+      </button>
     </main>
   );
 }

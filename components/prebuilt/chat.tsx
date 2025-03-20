@@ -28,7 +28,7 @@ function convertFileToBase64(file: File): Promise<string> {
 function FileUploadMessage({ file }: { file: File }) {
   return (
     <div className="flex w-full max-w-fit ml-auto">
-      <p>File uploaded: {file.name}</p>
+      <p className="text-white">文件已上传: {file.name}</p>
     </div>
   );
 }
@@ -40,6 +40,20 @@ export default function Chat() {
   const [input, setInput] = useState("");
   const [selectedFile, setSelectedFile] = useState<File>();
 
+  // 添加初始欢迎消息
+  useState(() => {
+    setTimeout(() => {
+      const welcomeMessage = (
+        <div className="flex flex-col gap-1 w-full max-w-fit mr-auto" key="welcome">
+          <div className="message">
+            欢迎使用AI健身助手！请告诉我您的健身需求，我将为您提供个性化的建议和计划。您也可以输入"打开仪表盘"查看您的健身数据。
+          </div>
+        </div>
+      );
+      setElements([welcomeMessage]);
+    }, 1000);
+  });
+
   async function onSubmit(input: string) {
     const newElements = [...elements];
     let base64File: string | undefined = undefined;
@@ -48,6 +62,18 @@ export default function Chat() {
       base64File = await convertFileToBase64(selectedFile);
     }
 
+    // 添加用户消息到UI
+    newElements.push(
+      <div className="flex flex-col w-full gap-1 mt-auto" key={history.length}>
+        {selectedFile && <FileUploadMessage file={selectedFile} />}
+        <div className="message user-message">{input}</div>
+      </div>
+    );
+    
+    // 立即更新UI显示用户消息
+    setElements(newElements);
+    
+    // 调用AI响应
     const element = await actions.agent({
       input,
       chat_history: history,
@@ -60,15 +86,15 @@ export default function Chat() {
           : undefined,
     });
 
-    newElements.push(
-      <div className="flex flex-col w-full gap-1 mt-auto" key={history.length}>
-        {selectedFile && <FileUploadMessage file={selectedFile} />}
-        <HumanMessageText content={input} />
-        <div className="flex flex-col gap-1 w-full max-w-fit mr-auto">
+    // 添加AI响应到UI，移除ai-message类
+    setElements(prev => [
+      ...prev,
+      <div className="flex flex-col gap-1 w-full max-w-fit mr-auto" key={`ai-${history.length}`}>
+        <div className="message">
           {element.ui}
         </div>
-      </div>,
-    );
+      </div>
+    ]);
 
     (async () => {
       let lastEvent = await element.lastEvent;
@@ -94,32 +120,34 @@ export default function Chat() {
       }
     })();
 
-    setElements(newElements);
     setInput("");
     setSelectedFile(undefined);
   }
 
   return (
-    <div className="w-[70vw] overflow-y-scroll h-[80vh] flex flex-col gap-4 mx-auto border-[1px] border-gray-200 rounded-lg p-3 shadow-sm bg-gray-50/25">
-      <LocalContext.Provider value={onSubmit}>
-        <div className="flex flex-col w-full gap-1 mt-auto">{elements}</div>
-      </LocalContext.Provider>
+    <div className="w-full h-full flex flex-col">
+      <div className="chat-messages" id="chatMessages">
+        {elements}
+      </div>
+      
       <form
         onSubmit={async (e) => {
           e.stopPropagation();
           e.preventDefault();
           await onSubmit(input);
         }}
-        className="w-full flex flex-row gap-2"
+        className="input-group mt-3"
       >
         <Input
-          placeholder="What's the weather like in San Francisco?"
+          className="form-control chat-input"
+          placeholder="告诉我您的健身需求，例如：'我想开始增肌训练'"
           value={input}
           onChange={(e) => setInput(e.target.value)}
         />
-        <div className="w-[300px]">
+        
+        <div className="d-flex align-items-center">
           <Input
-            placeholder="Upload"
+            className="d-none"
             id="image"
             type="file"
             accept="image/*"
@@ -129,9 +157,28 @@ export default function Chat() {
               }
             }}
           />
+          <label htmlFor="image" className="btn ms-2" style={{
+            background: "rgba(255, 255, 255, 0.15)",
+            border: "1px solid rgba(255, 255, 255, 0.3)",
+            borderRadius: "50%",
+            width: "40px",
+            height: "40px",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            cursor: "pointer"
+          }}>
+            <i className="fas fa-image text-white"></i>
+          </label>
+          
+          <div className="ms-2">
+            <VoiceRecorder onTextChange={setInput} />
+          </div>
+          
+          <Button type="submit" className="btn send-btn ms-2">
+            <i className="fas fa-paper-plane text-white"></i>
+          </Button>
         </div>
-        <VoiceRecorder onTextChange={setInput} />
-        <Button type="submit">Submit</Button>
       </form>
     </div>
   );
