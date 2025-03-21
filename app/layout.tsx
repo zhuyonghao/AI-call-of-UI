@@ -4,6 +4,8 @@ import type { Metadata } from "next";
 import { EndpointsContext } from "./agent";
 import { ReactNode } from "react";
 import Script from "next/script";
+import { FloatingComponentProvider } from "./shared";
+import { FloatingComponentContainer } from "@/components/prebuilt/FloatingComponentContainer";
 
 export const metadata: Metadata = {
   title: "LangChain.js Gen UI",
@@ -21,10 +23,13 @@ export default function RootLayout(props: { children: ReactNode }) {
       <body>
         <div id="particles-js"></div>
         <div id="title-particles"></div>
-        <div className="content-container">
-          <div className="glass-highlight"></div>
-          <EndpointsContext>{props.children}</EndpointsContext>
-        </div>
+        <FloatingComponentProvider>
+          <div className="content-container">
+            <div className="glass-highlight"></div>
+            <EndpointsContext>{props.children}</EndpointsContext>
+          </div>
+          <FloatingComponentContainer />
+        </FloatingComponentProvider>
         
         <Script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js" strategy="afterInteractive" />
         <Script id="particles-config" strategy="afterInteractive">

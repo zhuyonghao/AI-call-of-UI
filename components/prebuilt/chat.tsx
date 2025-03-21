@@ -8,6 +8,7 @@ import { useActions } from "@/utils/client";
 import { LocalContext } from "@/app/shared";
 import { HumanMessageText } from "./message";
 import { VoiceRecorder } from "./VoiceRecorder";
+import { useFloatingComponent } from "@/app/shared";
 
 export interface ChatProps {}
 
@@ -39,8 +40,9 @@ export default function Chat() {
   const [history, setHistory] = useState<[role: string, content: string][]>([]);
   const [input, setInput] = useState("");
   const [selectedFile, setSelectedFile] = useState<File>();
-  // 添加消息容器的引用
   const chatContainerRef = useRef<HTMLDivElement>(null);
+  // 添加浮动组件的钩子
+  const { showFloatingComponent } = useFloatingComponent();
 
   // 滚动到底部的函数
   const scrollToBottom = () => {
@@ -100,11 +102,20 @@ export default function Chat() {
           : undefined,
     });
 
-    // 添加AI响应到UI
+    // 将所有AI生成的组件都放在浮动组件中显示
+    showFloatingComponent(
+      <div className="ai-floating-component">
+        {element.ui}
+      </div>
+    );
+    
+    // 同时在聊天界面中也添加一个简化版本的响应
     setElements(prev => [
       ...prev,
       <div className="flex flex-col gap-1 w-full max-w-fit mr-auto" key={`ai-${history.length}`}>
-        {element.ui}
+        <div className="message ai-message">
+          AI已生成响应，请查看弹出窗口
+        </div>
       </div>
     ]);
     
