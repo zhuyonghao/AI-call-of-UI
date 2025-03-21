@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
 import { EndpointsContext } from "@/app/agent";
@@ -39,6 +39,20 @@ export default function Chat() {
   const [history, setHistory] = useState<[role: string, content: string][]>([]);
   const [input, setInput] = useState("");
   const [selectedFile, setSelectedFile] = useState<File>();
+  // 添加消息容器的引用
+  const chatContainerRef = useRef<HTMLDivElement>(null);
+
+  // 滚动到底部的函数
+  const scrollToBottom = () => {
+    if (chatContainerRef.current) {
+      chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+    }
+  };
+
+  // 当消息列表变化时滚动到底部
+  useEffect(() => {
+    scrollToBottom();
+  }, [elements]);
 
   // 添加初始欢迎消息
   useState(() => {
@@ -90,10 +104,12 @@ export default function Chat() {
     setElements(prev => [
       ...prev,
       <div className="flex flex-col gap-1 w-full max-w-fit mr-auto" key={`ai-${history.length}`}>
-        {/* 直接渲染element.ui，不添加额外的message容器 */}
         {element.ui}
       </div>
     ]);
+    
+    // 确保在添加AI响应后滚动到底部
+    setTimeout(scrollToBottom, 100);
 
     (async () => {
       let lastEvent = await element.lastEvent;
@@ -125,10 +141,11 @@ export default function Chat() {
 
   return (
     <div className="w-full h-full flex flex-col">
-      <div className="chat-messages" id="chatMessages">
+      <div className="chat-messages" id="chatMessages" ref={chatContainerRef}>
         {elements}
       </div>
       
+      {/* 表单部分保持不变 */}
       <form
         onSubmit={async (e) => {
           e.stopPropagation();
