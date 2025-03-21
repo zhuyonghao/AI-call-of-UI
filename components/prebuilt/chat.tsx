@@ -86,13 +86,12 @@ export default function Chat() {
           : undefined,
     });
 
-    // 添加AI响应到UI，移除ai-message类
+    // 添加AI响应到UI
     setElements(prev => [
       ...prev,
       <div className="flex flex-col gap-1 w-full max-w-fit mr-auto" key={`ai-${history.length}`}>
-        <div className="message">
-          {element.ui}
-        </div>
+        {/* 直接渲染element.ui，不添加额外的message容器 */}
+        {element.ui}
       </div>
     ]);
 

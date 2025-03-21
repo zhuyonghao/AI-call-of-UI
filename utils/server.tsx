@@ -46,6 +46,7 @@ export function streamRunnableUI<RunInput, RunOutput>(
         isValidElement(streamEvent.data.output.value)
       ) {
         if (streamEvent.data.output.type === "append") {
+          // 直接添加组件，不包装在AIMessage中
           ui.append(streamEvent.data.output.value);
         } else if (streamEvent.data.output.type === "update") {
           ui.update(streamEvent.data.output.value);
@@ -56,10 +57,9 @@ export function streamRunnableUI<RunInput, RunOutput>(
         const chunk = streamEvent.data.chunk;
         if ("text" in chunk && typeof chunk.text === "string") {
           if (!callbacks[streamEvent.run_id]) {
-            // the createStreamableValue / useStreamableValue is preferred
-            // as the stream events are updated immediately in the UI
-            // rather than being batched by React via createStreamableUI
+            // 对于文本流，创建一个新的流
             const textStream = createStreamableValue();
+            // 使用AIMessage包装文本内容
             ui.append(<AIMessage value={textStream.value} />);
             callbacks[streamEvent.run_id] = textStream;
           }
@@ -71,13 +71,13 @@ export function streamRunnableUI<RunInput, RunOutput>(
       lastEventValue = streamEvent;
     }
 
-    // resolve the promise, allowing the client to continue
+    // 解析promise，允许客户端继续
     resolve(lastEventValue?.data.output);
 
-    // Close the UI stream for all text streams.
+    // 关闭所有文本流的UI流
     Object.values(callbacks).forEach((cb) => cb.done());
 
-    // Close the main UI stream for component streams yielded by tools.
+    // 关闭组件流的主UI流
     ui.done();
   })();
 
