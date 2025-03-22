@@ -70,7 +70,7 @@ export function FloatingComponentContainer() {
             <i className="fas fa-times"></i>
           </button>
         </div>
-        <div className="floating-component-content">
+        <div className="floating-component-content flex items-center justify-center">
           {component}
         </div>
         <div className="floating-component-footer">
