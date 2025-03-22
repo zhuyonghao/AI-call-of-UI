@@ -71,6 +71,10 @@ export default function Chat() {
   });
 
   async function onSubmit(input: string) {
+    // 立即清空输入框，提高用户体验
+    setInput("");
+    setSelectedFile(undefined);
+    
     const newElements = [...elements];
     let base64File: string | undefined = undefined;
     let fileExtension = selectedFile?.type.split("/")[1];
@@ -109,29 +113,45 @@ export default function Chat() {
       </div>
     );
 
-    // 将所有AI生成的组件都放在浮动组件中显示
-    showFloatingComponent(aiResponseComponent);
+    // 获取lastEvent以确定响应类型
+    let lastEvent = await element.lastEvent;
+    const isToolResponse = typeof lastEvent === "object" && lastEvent["invokeTools"];
     
-    // 同时在聊天界面中也添加一个可点击的简化版本的响应
-    setElements(prev => [
-      ...prev,
-      <div className="flex flex-col gap-1 w-full max-w-fit mr-auto" key={`ai-${history.length}`}>
-        <div 
-          className="message ai-message clickable-message"
-          onClick={() => showFloatingComponent(aiResponseComponent)}
-        >
-          AI已生成响应，点击查看详细内容
+    if (isToolResponse) {
+      // 如果是工具调用响应，使用浮动组件
+      showFloatingComponent(aiResponseComponent);
+      
+      // 同时在聊天界面中也添加一个可点击的简化版本的响应
+      setElements(prev => [
+        ...prev,
+        <div className="flex flex-col gap-1 w-full max-w-fit mr-auto" key={`ai-${history.length}`}>
+          <div 
+            className="message ai-message clickable-message"
+            onClick={() => showFloatingComponent(aiResponseComponent)}
+          >
+            AI已生成响应，点击查看详细内容
+          </div>
         </div>
-      </div>
-    ]);
+      ]);
+    } else {
+      // 如果是普通文本响应，直接添加到聊天容器中
+      setElements(prev => [
+        ...prev,
+        <div className="flex flex-col gap-1 w-full max-w-fit mr-auto" key={`ai-${history.length}`}>
+          <div className="ai-floating-component">
+            {element.ui}
+          </div>
+        </div>
+      ]);
+    }
     
     // 确保在添加AI响应后滚动到底部
     setTimeout(scrollToBottom, 100);
 
+    // 更新聊天历史
     (async () => {
-      let lastEvent = await element.lastEvent;
       if (typeof lastEvent === "object") {
-        if (lastEvent["invokeModel"]["result"]) {
+        if (lastEvent["invokeModel"] && lastEvent["invokeModel"]["result"]) {
           setHistory((prev) => [
             ...prev,
             ["user", input],
@@ -165,17 +185,39 @@ export default function Chat() {
       {/* 表单部分保持不变 */}
       <form
         onSubmit={async (e) => {
+          e.preventDefault(); // 确保这行代码存在且正确执行
           e.stopPropagation();
-          e.preventDefault();
           await onSubmit(input);
         }}
         className="input-group mt-3"
       >
-        <Input
-          className="form-control chat-input"
+        {/* 将Input组件替换为textarea */}
+        <textarea
+          className="form-control chat-input resize-none"
           placeholder="告诉我您的健身需求，例如：'我想开始增肌训练'"
           value={input}
           onChange={(e) => setInput(e.target.value)}
+          rows={1}
+          style={{ 
+            minHeight: "50px", 
+            maxHeight: "150px", 
+            overflowY: "auto" 
+          }}
+          onInput={(e) => {
+            // 自动调整高度
+            const target = e.target as HTMLTextAreaElement;
+            target.style.height = "auto";
+            target.style.height = `${Math.min(target.scrollHeight, 150)}px`;
+          }}
+          onKeyDown={(e) => {
+            // 按下Shift+Enter时换行，仅按Enter时提交
+            if (e.key === 'Enter' && !e.shiftKey) {
+              e.preventDefault();
+              if (input.trim()) {
+                onSubmit(input);
+              }
+            }
+          }}
         />
         
         <div className="d-flex align-items-center">
