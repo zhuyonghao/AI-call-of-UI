@@ -178,22 +178,30 @@ export default function Chat() {
 
   return (
     <div className="w-full h-full flex flex-col">
-      <div className="chat-messages" id="chatMessages" ref={chatContainerRef}>
+      <div 
+        className="chat-messages custom-scrollbar" 
+        id="chatMessages" 
+        ref={chatContainerRef}
+        style={{
+          scrollbarWidth: 'thin',
+          scrollbarColor: 'rgba(255, 255, 255, 0.2) rgba(255, 255, 255, 0.05)'
+        }}
+      >
         {elements}
       </div>
       
-      {/* 表单部分保持不变 */}
+      {/* 表单部分 */}
       <form
         onSubmit={async (e) => {
-          e.preventDefault(); // 确保这行代码存在且正确执行
+          e.preventDefault();
           e.stopPropagation();
           await onSubmit(input);
         }}
         className="input-group mt-3"
       >
-        {/* 将Input组件替换为textarea */}
+        {/* 将textarea也添加自定义滚动条样式 */}
         <textarea
-          className="form-control chat-input resize-none"
+          className="form-control chat-input resize-none custom-scrollbar"
           placeholder="告诉我您的健身需求，例如：'我想开始增肌训练'"
           value={input}
           onChange={(e) => setInput(e.target.value)}
@@ -201,7 +209,9 @@ export default function Chat() {
           style={{ 
             minHeight: "50px", 
             maxHeight: "150px", 
-            overflowY: "auto" 
+            overflowY: "auto",
+            scrollbarWidth: 'thin',
+            scrollbarColor: 'rgba(255, 255, 255, 0.2) rgba(255, 255, 255, 0.05)'
           }}
           onInput={(e) => {
             // 自动调整高度
