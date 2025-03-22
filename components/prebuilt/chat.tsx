@@ -102,19 +102,25 @@ export default function Chat() {
           : undefined,
     });
 
-    // 将所有AI生成的组件都放在浮动组件中显示
-    showFloatingComponent(
+    // 保存AI响应组件，以便后续点击时可以再次显示
+    const aiResponseComponent = (
       <div className="ai-floating-component">
         {element.ui}
       </div>
     );
+
+    // 将所有AI生成的组件都放在浮动组件中显示
+    showFloatingComponent(aiResponseComponent);
     
-    // 同时在聊天界面中也添加一个简化版本的响应
+    // 同时在聊天界面中也添加一个可点击的简化版本的响应
     setElements(prev => [
       ...prev,
       <div className="flex flex-col gap-1 w-full max-w-fit mr-auto" key={`ai-${history.length}`}>
-        <div className="message ai-message">
-          AI已生成响应，请查看弹出窗口
+        <div 
+          className="message ai-message clickable-message"
+          onClick={() => showFloatingComponent(aiResponseComponent)}
+        >
+          AI已生成响应，点击查看详细内容
         </div>
       </div>
     ]);

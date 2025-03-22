@@ -50,11 +50,11 @@ Your job is to determine whether or not you have a tool which can handle the use
 
   const llm = new ChatOpenAI({
     temperature: 0,
-    modelName: "deepseek-chat",
+    modelName: "moonshot-v1-8k", // deepseek-chat
     streaming: true,
-    openAIApiKey: "sk-2c6a28ccd2314527b8e1a74c29dc4e57", // 替换为
+    openAIApiKey: "sk-rT5vrStWV7u26OtR6EAjZHmb4O9bTINENpYtMU89H6yLFebx", // 替换为sk-2c6a28ccd2314527b8e1a74c29dc4e57
     configuration: {
-      baseURL: "https://api.deepseek.com/v1", // DeepSeek 的API端点
+      baseURL: "https://api.moonshot.cn/v1", // DeepSeek 的API端点https://api.deepseek.com/v1
     },
   }).bindTools(tools);
   const chain = initialPrompt.pipe(llm);
