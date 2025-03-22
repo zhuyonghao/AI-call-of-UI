@@ -2,87 +2,53 @@
 
 import { useFloatingComponent } from "@/app/shared";
 import { useEffect, useRef, useState } from "react";
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogHeader, 
+  DialogTitle, 
+  DialogFooter,
+  DialogClose
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 
 export function FloatingComponentContainer() {
   const { isVisible, component, hideFloatingComponent } = useFloatingComponent();
-  const componentRef = useRef<HTMLDivElement>(null);
-  const [isClosing, setIsClosing] = useState(false);
+  const [open, setOpen] = useState(false);
 
+  // 当isVisible变化时更新Dialog的open状态
   useEffect(() => {
-    // 点击外部区域时隐藏组件
-    const handleClickOutside = (event: MouseEvent) => {
-      if (componentRef.current && !componentRef.current.contains(event.target as Node)) {
-        handleClose();
-      }
-    };
-
-    // 按ESC键关闭
-    const handleEscKey = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        handleClose();
-      }
-    };
-
-    if (isVisible) {
-      document.addEventListener("mousedown", handleClickOutside);
-      document.addEventListener("keydown", handleEscKey);
-      // 防止背景滚动
-      document.body.style.overflow = "hidden";
-    }
-
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-      document.removeEventListener("keydown", handleEscKey);
-      document.body.style.overflow = "";
-    };
-  }, [isVisible, hideFloatingComponent]);
-
-  // 重置状态当组件显示时
-  useEffect(() => {
-    if (isVisible) {
-      setIsClosing(false);
-    }
+    setOpen(isVisible);
   }, [isVisible]);
 
-  const handleClose = () => {
-    setIsClosing(true);
-    // 添加关闭动画后再隐藏
-    setTimeout(() => {
+  // 当Dialog关闭时通知Context
+  const handleOpenChange = (open: boolean) => {
+    setOpen(open);
+    if (!open) {
       hideFloatingComponent();
-    }, 300);
+    }
   };
 
-  if (!isVisible) return null;
+  if (!component) return null;
 
   return (
-    <div className={`floating-component-overlay ${isClosing ? 'closing' : ''}`}>
-      <div 
-        ref={componentRef} 
-        className={`floating-component-container ${isClosing ? 'closing' : ''}`}
-      >
-        <div className="floating-component-header">
-          <div className="floating-component-title">AI健身助手</div>
-          <button 
-            className="floating-component-close"
-            onClick={handleClose}
-            aria-label="关闭"
-          >
-            <i className="fas fa-times"></i>
-          </button>
-        </div>
-        <div className="floating-component-content flex items-center justify-center">
+    <Dialog open={open} onOpenChange={handleOpenChange}>
+      <DialogContent className="floating-dialog-content max-w-4xl max-h-[80vh] overflow-hidden flex flex-col">
+        <DialogHeader className="floating-component-header">
+          <DialogTitle className="floating-component-title">AI健身助手</DialogTitle>
+        </DialogHeader>
+        
+        <div className="floating-component-content flex-1 overflow-auto">
           {component}
         </div>
-        <div className="floating-component-footer">
+        
+        <DialogFooter className="floating-component-footer">
           <div className="floating-component-tip">提示: 按ESC键可关闭此窗口</div>
-          <button 
-            className="floating-component-action-btn"
-            onClick={handleClose}
-          >
-            关闭
-          </button>
-        </div>
-      </div>
-    </div>
+          <DialogClose asChild>
+            <Button className="floating-component-action-btn">关闭</Button>
+          </DialogClose>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
