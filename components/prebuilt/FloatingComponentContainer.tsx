@@ -37,13 +37,13 @@ export function FloatingComponentContainer() {
       <DialogContent className={cn(
         "max-w-4xl max-h-[80vh] overflow-hidden flex flex-col",
         "bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50",
-        "border border-indigo-100 shadow-lg rounded-xl"
+        "border border-indigo-100 shadow-lg rounded-3xl !rounded-3xl"
       )}>
         <DialogHeader className="border-b border-indigo-100 pb-3">
           <DialogTitle className="text-xl font-bold text-indigo-700">AI健身助手</DialogTitle>
         </DialogHeader>
         
-        <div className="flex-1 overflow-auto p-4">
+        <div className="flex-1 overflow-auto p-4 flex justify-center [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-indigo-200 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-indigo-300">
           {component}
         </div>
         
