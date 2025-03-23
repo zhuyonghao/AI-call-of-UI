@@ -4,3 +4,4 @@ export * from "./weather";
 export * from "./firecrawl";
 export * from "./workout";
 export * from "./plan";
+export * from "./recipe";
