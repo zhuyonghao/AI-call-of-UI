@@ -3,3 +3,4 @@ export * from "./invoice";
 export * from "./weather";
 export * from "./firecrawl";
 export * from "./workout";
+export * from "./plan";
