@@ -62,7 +62,7 @@ export default function Chat() {
       const welcomeMessage = (
         <div className="flex flex-col gap-1 w-full max-w-fit mr-auto" key="welcome">
           <div className="message">
-            欢迎使用AI健身助手！请告诉我您的健身需求，我将为您提供个性化的建议和计划。您也可以输入"打开仪表盘"查看您的健身数据。
+            欢迎使用AI健身助手！请告诉我您的健身需求，我将为您提供个性化的建议和计划。
           </div>
         </div>
       );
