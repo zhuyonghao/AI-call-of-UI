@@ -18,7 +18,7 @@ export function VoiceRecorder({ onTextChange }: VoiceRecorderProps) {
   
   const wsRef = useRef<WebSocket | null>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
-  const sourceRef = useRef<MediaStreamSource | null>(null);
+  const sourceRef = useRef<MediaStreamAudioSourceNode | null>(null);
   const processorRef = useRef<ScriptProcessorNode | null>(null);
   const countdownIntervalRef = useRef<NodeJS.Timeout | null>(null);
   
@@ -39,7 +39,7 @@ export function VoiceRecorder({ onTextChange }: VoiceRecorderProps) {
   function getWebSocketUrl() {
     const url = "wss://iat-api.xfyun.cn/v2/iat";
     const host = "iat-api.xfyun.cn";
-    const date = new Date().toGMTString();
+    const date = new Date().toUTCString();
     const algorithm = "hmac-sha256";
     const headers = "host date request-line";
     const signatureOrigin = `host: ${host}\ndate: ${date}\nGET /v2/iat HTTP/1.1`;
@@ -247,7 +247,7 @@ export function VoiceRecorder({ onTextChange }: VoiceRecorderProps) {
       }
       stopRecording();
     };
-  }, []);
+  }, [stopRecording]);
 
   function toggleRecording() {
     if (isRecording) {
