@@ -247,7 +247,7 @@ export function VoiceRecorder({ onTextChange }: VoiceRecorderProps) {
       }
       stopRecording();
     };
-  }, [stopRecording]);
+  }, []);
 
   function toggleRecording() {
     if (isRecording) {
