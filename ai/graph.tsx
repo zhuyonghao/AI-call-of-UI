@@ -5,7 +5,14 @@ import {
   ChatPromptTemplate,
   MessagesPlaceholder,
 } from "@langchain/core/prompts";
-import { workoutTool, trainingPlanTool, recipeTool, achievementTool, trainingRecordTool } from "./tools";
+import {
+  workoutTool,
+  trainingPlanTool,
+  recipeTool,
+  achievementTool,
+  trainingRecordTool,
+  fitnessSurveyTool, // 添加问卷工具导入
+} from "./tools";
 import { ChatOpenAI } from "@langchain/openai";
 
 interface AgentExecutorState {
@@ -46,7 +53,14 @@ Your job is to determine whether or not you have a tool which can handle the use
     ["human", "{input}"],
   ]);
 
-  const tools = [workoutTool, trainingPlanTool, recipeTool, achievementTool, trainingRecordTool];
+  const tools = [
+    workoutTool,
+    trainingPlanTool,
+    recipeTool,
+    achievementTool,
+    trainingRecordTool,
+    fitnessSurveyTool, // 添加问卷工具到工具列表
+  ];
 
   const llm = new ChatOpenAI({
     temperature: 0,
@@ -102,6 +116,7 @@ const invokeTools = async (
     [recipeTool.name]: recipeTool,
     [achievementTool.name]: achievementTool,
     [trainingRecordTool.name]: trainingRecordTool,
+    [fitnessSurveyTool.name]: fitnessSurveyTool, // 添加问卷工具到工具映射
   };
 
   const selectedTool = toolMap[state.toolCall.name];
