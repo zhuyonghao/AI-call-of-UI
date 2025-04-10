@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { CalendarIcon, Share2Icon } from "@radix-ui/react-icons";
-import { Edit as EditIcon, ClipboardList, ThumbsUp, ThumbsDown, BarChart3, Save } from "lucide-react";
+import { Edit as EditIcon, ClipboardList, ThumbsUp, ThumbsDown, BarChart3, Save, Award, Trophy, Dumbbell, Activity } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -27,6 +27,7 @@ import { Slider } from "@/components/ui/slider";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { zhCN } from "date-fns/locale";
+import { Badge } from "../ui/badge";
 
 export interface SurveyQuestion {
   id: string;
@@ -39,6 +40,15 @@ export interface SurveyQuestion {
   answer?: string | number; // 用户的回答
 }
 
+export interface FitnessAchievement {
+  id: string;
+  title: string;
+  description: string;
+  value: number;
+  unit: string;
+  icon: "trophy" | "award" | "dumbbell" | "activity";
+}
+
 export interface FitnessSurveyProps {
   id: string;
   title: string;
@@ -46,6 +56,7 @@ export interface FitnessSurveyProps {
   date: string;
   questions: SurveyQuestion[];
   completed: boolean;
+  achievements?: FitnessAchievement[]; // 新增健身成果数据
 }
 
 export function FitnessSurveyLoading() {
@@ -87,6 +98,7 @@ export function FitnessSurvey(props: FitnessSurveyProps) {
   const [isEditing, setIsEditing] = useState(!props.completed);
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [surveyData, setSurveyData] = useState<FitnessSurveyProps>(props);
+  const [showAchievements, setShowAchievements] = useState(false);
   
   const handleShare = async () => {
     try {
@@ -104,11 +116,16 @@ export function FitnessSurvey(props: FitnessSurveyProps) {
   };
 
   const handleSave = () => {
+    // 计算健身成果
+    const achievements = calculateAchievements(surveyData.questions);
+    
     setSurveyData({
       ...surveyData,
-      completed: true
+      completed: true,
+      achievements: achievements
     });
     setIsEditing(false);
+    setShowAchievements(true);
   };
 
   const handleAnswerChange = (questionId: string, answer: string | number) => {
@@ -128,6 +145,72 @@ export function FitnessSurvey(props: FitnessSurveyProps) {
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return format(date, 'yyyy年MM月dd日', { locale: zhCN });
+  };
+
+  // 根据问卷回答计算健身成果
+  const calculateAchievements = (questions: SurveyQuestion[]): FitnessAchievement[] => {
+    const achievements: FitnessAchievement[] = [];
+    
+    // 查找强度相关问题
+    const intensityQuestion = questions.find(q => 
+      q.question.includes('强度') && q.type === 'slider' && q.answer !== undefined);
+    
+    if (intensityQuestion && typeof intensityQuestion.answer === 'number') {
+      const intensity = intensityQuestion.answer;
+      achievements.push({
+        id: `intensity_${Date.now()}`,
+        title: '训练强度',
+        description: intensity > 7 ? '高强度训练完成！' : '中等强度训练完成',
+        value: intensity,
+        unit: '分',
+        icon: 'activity'
+      });
+    }
+    
+    // 查找满意度相关问题
+    const satisfactionQuestion = questions.find(q => 
+      q.question.includes('满意') && q.type === 'slider' && q.answer !== undefined);
+    
+    if (satisfactionQuestion && typeof satisfactionQuestion.answer === 'number') {
+      const satisfaction = satisfactionQuestion.answer;
+      achievements.push({
+        id: `satisfaction_${Date.now()}`,
+        title: '训练满意度',
+        description: satisfaction > 7 ? '对训练非常满意！' : '对训练基本满意',
+        value: satisfaction,
+        unit: '分',
+        icon: 'trophy'
+      });
+    }
+    
+    // 查找训练时长相关问题
+    const durationQuestion = questions.find(q => 
+      q.question.includes('时长') && q.answer !== undefined);
+    
+    if (durationQuestion && durationQuestion.answer) {
+      let duration = 0;
+      if (typeof durationQuestion.answer === 'number') {
+        duration = durationQuestion.answer;
+      } else if (typeof durationQuestion.answer === 'string') {
+        const match = durationQuestion.answer.match(/\d+/);
+        if (match) {
+          duration = parseInt(match[0], 10);
+        }
+      }
+      
+      if (duration > 0) {
+        achievements.push({
+          id: `duration_${Date.now()}`,
+          title: '训练时长',
+          description: duration > 60 ? '长时间训练完成！' : '完成训练',
+          value: duration,
+          unit: '分钟',
+          icon: 'dumbbell'
+        });
+      }
+    }
+    
+    return achievements;
   };
 
   const renderQuestion = (question: SurveyQuestion) => {
@@ -195,6 +278,44 @@ export function FitnessSurvey(props: FitnessSurveyProps) {
     }
   };
 
+  // 渲染健身成果
+  const renderAchievements = () => {
+    if (!surveyData.achievements || surveyData.achievements.length === 0) {
+      return null;
+    }
+
+    return (
+      <div className="mt-6 pt-4 border-t border-purple-100/50 dark:border-purple-800/30">
+        <h3 className="text-md font-semibold text-purple-800 dark:text-purple-300 mb-3 flex items-center">
+          <Award className="mr-2 h-4 w-4" />
+          训练成果
+        </h3>
+        <div className="grid grid-cols-2 gap-3">
+          {surveyData.achievements.map((achievement) => (
+            <div 
+              key={achievement.id}
+              className="flex flex-col p-3 rounded-lg bg-purple-100/60 dark:bg-purple-900/40 backdrop-blur-sm shadow-sm border border-purple-200/50 dark:border-purple-800/30"
+            >
+              <div className="flex justify-between items-start mb-2">
+                <div className="p-2 rounded-full bg-white/70 dark:bg-slate-800/70 text-purple-600 dark:text-purple-400">
+                  {achievement.icon === 'trophy' && <Trophy className="h-5 w-5" />}
+                  {achievement.icon === 'award' && <Award className="h-5 w-5" />}
+                  {achievement.icon === 'dumbbell' && <Dumbbell className="h-5 w-5" />}
+                  {achievement.icon === 'activity' && <Activity className="h-5 w-5" />}
+                </div>
+                <Badge className="bg-purple-200 text-purple-800 hover:bg-purple-300 dark:bg-purple-800/50 dark:text-purple-200">
+                  {achievement.value} {achievement.unit}
+                </Badge>
+              </div>
+              <h4 className="text-sm font-semibold text-purple-800 dark:text-purple-300 mb-1">{achievement.title}</h4>
+              <p className="text-xs text-purple-600/80 dark:text-purple-400/80">{achievement.description}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
   return (
     <Card className={cn(
       "w-[500px] transition-all duration-300 rounded-xl overflow-hidden",
@@ -243,6 +364,17 @@ export function FitnessSurvey(props: FitnessSurveyProps) {
             </div>
           ))}
         </div>
+        
+        {/* 显示健身成果 */}
+        {surveyData.completed && renderAchievements()}
+        
+        {/* 新增成果提示 */}
+        {showAchievements && (
+          <div className="mt-4 p-3 bg-green-100 dark:bg-green-900/30 rounded-lg text-green-700 dark:text-green-300 text-sm flex items-center">
+            <Trophy className="h-4 w-4 mr-2" />
+            恭喜！您已完成训练并获得了新的健身成果！
+          </div>
+        )}
       </CardContent>
       <CardFooter className="flex justify-end pt-4 border-t border-purple-100/50 dark:border-purple-800/30 mt-2 pb-3">
         {isEditing ? (
@@ -296,23 +428,17 @@ export function FitnessSurvey(props: FitnessSurveyProps) {
                 onChange={(e) => setSurveyData({...surveyData, date: e.target.value})}
               />
             </div>
-          </div>
-          <div className="flex justify-end gap-2">
-            <Button 
-              variant="outline" 
-              onClick={() => setShowEditDialog(false)}
-              className="border-purple-200 text-purple-600 hover:bg-purple-50 hover:text-purple-700 dark:border-gray-600 dark:text-purple-400 dark:hover:bg-gray-700 rounded-full px-5"
-            >
-              取消
-            </Button>
-            <Button 
-              onClick={() => {
-                setShowEditDialog(false);
-              }}
-              className="bg-purple-600 hover:bg-purple-700 text-white rounded-full px-5"
-            >
-              保存
-            </Button>
+            <div className="flex justify-end">
+              <Button 
+                onClick={() => {
+                  setShowEditDialog(false);
+                  setIsEditing(true);
+                }}
+                className="bg-purple-600 hover:bg-purple-700 text-white"
+              >
+                保存修改
+              </Button>
+            </div>
           </div>
         </DialogContent>
       </Dialog>

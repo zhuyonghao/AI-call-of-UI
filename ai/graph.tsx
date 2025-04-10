@@ -11,7 +11,8 @@ import {
   recipeTool,
   achievementTool,
   trainingRecordTool,
-  fitnessSurveyTool, // 添加问卷工具导入
+  fitnessSurveyTool,
+  planEvaluationTool, // 添加评估工具导入
 } from "./tools";
 import { ChatOpenAI } from "@langchain/openai";
 
@@ -59,7 +60,8 @@ Your job is to determine whether or not you have a tool which can handle the use
     recipeTool,
     achievementTool,
     trainingRecordTool,
-    fitnessSurveyTool, // 添加问卷工具到工具列表
+    fitnessSurveyTool,
+    planEvaluationTool, // 添加评估工具到工具列表
   ];
 
   const llm = new ChatOpenAI({
@@ -116,7 +118,8 @@ const invokeTools = async (
     [recipeTool.name]: recipeTool,
     [achievementTool.name]: achievementTool,
     [trainingRecordTool.name]: trainingRecordTool,
-    [fitnessSurveyTool.name]: fitnessSurveyTool, // 添加问卷工具到工具映射
+    [fitnessSurveyTool.name]: fitnessSurveyTool,
+    [planEvaluationTool.name]: planEvaluationTool, // 添加评估工具到工具映射
   };
 
   const selectedTool = toolMap[state.toolCall.name];
